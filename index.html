@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>课程列表</title>
+    <!-- 引入Bootstrap 5的CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">课程列表|购买QQ:1727532</h1>
+
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-input" placeholder="请输入课程名">
+                    <button class="btn btn-primary" id="search">搜索</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>课程名</th>
+                    </tr>
+                </thead>
+                <tbody id="course-list">
+                    <!-- 课程列表将通过JS填充 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <button class="btn btn-secondary" id="prev-page" disabled>上一页</button>
+            <span id="current-page">1</span>
+            <button class="btn btn-secondary" id="next-page">下一页</button>
+        </div>
+    </div>
+
+    <script>
+        const ITEMS_PER_PAGE = 20;
+        let currentPage = 1;
+        let filteredCourses = [];
+        let allCourses = []; // 用于存储所有课程
+
+        // 渲染课程列表
+        const renderCourses = () => {
+            const courseList = document.querySelector("#course-list");
+            courseList.innerHTML = ""; // 清空列表
+
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredCourses.length);
+
+            if (filteredCourses.length > 0) {
+                for (let i = startIndex; i < endIndex; i++) {
+                    const course = filteredCourses[i];
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${course}</td>
+                    `;
+                    courseList.appendChild(row);
+                }
+            } else {
+                courseList.innerHTML = `<tr><td colspan="2" class="text-center text-danger">未找到匹配的课程</td></tr>`;
+            }
+
+            updatePagination();
+            window.scrollTo(0, 0); // 滚动到页面顶部
+        };
+
+        // 更新分页
+        const updatePagination = () => {
+            const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
+            document.querySelector("#current-page").textContent = currentPage;
+
+            const prevButton = document.querySelector("#prev-page");
+            const nextButton = document.querySelector("#next-page");
+
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        };
+
+        // 加载所有课程
+        const loadCourses = () => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "./kcb.txt", true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    allCourses = xhr.responseText.trim().split("\n");
+                    filteredCourses = [...allCourses]; // 初始化时显示所有课程
+                    renderCourses();
+                }
+            };
+
+            xhr.send();
+        };
+
+        // 上一页和下一页按钮点击事件
+        document.querySelector("#prev-page").addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderCourses();
+            }
+        });
+
+        document.querySelector("#next-page").addEventListener("click", () => {
+            const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderCourses();
+            }
+        });
+
+        // 搜索按钮点击事件
+        const searchBtn = document.querySelector("#search");
+
+        searchBtn.addEventListener("click", function () {
+            const searchInput = document.querySelector("#search-input");
+            const searchValue = searchInput.value.trim();
+
+            if (searchValue) {
+                filteredCourses = allCourses.filter(course => course.includes(searchValue));
+                currentPage = 1; // 重置到第一页
+                renderCourses();
+            } else {
+                alert("请输入课程名进行搜索");
+            }
+        });
+
+        // 初始加载所有课程
+        loadCourses();
+
+    </script>
+
+    <!-- 引入Bootstrap 5的JS (需要popper.js支持) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>
