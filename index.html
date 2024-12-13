@@ -128,7 +128,9 @@
             const searchValue = searchInput.value.trim();
 
             if (searchValue) {
-                filteredCourses = allCourses.filter(course => course.includes(searchValue));
+                filteredCourses = allCourses.filter((course) => {
+                    return course.toLowerCase().includes(searchValue.toLowerCase());
+                });
                 currentPage = 1; // 重置到第一页
                 renderCourses();
             } else {
